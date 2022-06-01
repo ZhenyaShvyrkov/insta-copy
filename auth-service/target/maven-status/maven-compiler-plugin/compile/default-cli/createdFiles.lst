@@ -1,0 +1,8 @@
+com\instagram\AuthApplication.class
+com\instagram\service\UserDetailsServiceImpl.class
+com\instagram\model\User$UserBuilder.class
+com\instagram\model\projection\AccountInfo.class
+com\instagram\service\UserAuthenticationProvider.class
+com\instagram\config\AuthorizationServerConfig.class
+com\instagram\model\User.class
+com\instagram\repository\UserDetailsRepository.class

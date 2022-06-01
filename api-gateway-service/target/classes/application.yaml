@@ -1,0 +1,77 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: api-gateway
+  jackson:
+    deserialization:
+      FAIL_ON_IGNORED_PROPERTIES: false
+    serialization:
+      INDENT_OUTPUT: false
+      WRITE_DATES_AS_TIMESTAMPS: false
+      WRITE_BIGDECIMAL_AS_PLAIN: true
+  security:
+    oauth2:
+      client:
+        registration:
+          insta-client-oidc:
+            client-id: insta-client
+            client-secret: secret
+            scope: openid
+            authorization-grant-type: authorization_code
+            #redirect-uri: http://localhost:9090/login/oauth2/code/ #replace on redirect-uri-template: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri-template: '{baseUrl}/login/oauth2/code/insta-client-oidc'
+            client-authentication-method: client_secret_post
+            client-name: insta-client-oidc
+        provider:
+          insta-client-oidc:
+            issuer-uri: http://localhost:9000
+            token-uri: http://localhost:9000/oauth2/token
+            authorization-uri: http://localhost:9000/oauth2/authorize
+            user-info-uri: http://localhost:9000/userinfo
+            user-name-attribute: user_name
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: user-service-route
+          uri: http://localhost:8080 #${USERS_SERVICE_URL:lb://user-service}
+          predicates:
+            - Path=/public/v1/users
+            - Path=/public/v1/users/{username}
+            - Path=/*/users/search
+            - Path=/*/users/{username}/followers/**
+            - Path=/*/users/{username}/followings/**
+            - Path=/*/users/{username}/password
+            - Path=/*/users/{username}/photo
+            - Path=/*/users/{username}/profile
+      default-filters:
+        - RemoveRequestHeader=Cookie
+        - TokenRelay=
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${instanceId:${random.value}}
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+    enabled: false
+
+management:
+  endpoint:
+    gateway:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: gateway
+
+logging:
+  level:
+    com: TRACE
+    org: TRACE
